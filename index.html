@@ -1,0 +1,1933 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>向钱进</title>
+  
+  <!-- PWA -->
+  <meta name="theme-color" content="#f6e6cf" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="向钱进" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png" />
+<style>
+    :root{
+      --wood1:#f6e6cf;
+      --wood2:#efd9bb;
+      --wood3:#e7cfae;
+
+      --panel: rgba(255,255,255,.86);
+      --shadow: 0 12px 26px rgba(0,0,0,.10);
+
+      --text:#203040;
+      --muted:#6b7a88;
+
+      --blueSoft: rgba(111,182,255,.85);
+      --orange:#ff9a3c;
+
+      --red:#ef4444;
+      --green:#16a34a;
+      --yellow:#fbbf24;
+
+      --radius:18px;
+    }
+
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:var(--text);}
+    body{
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.08), rgba(255,255,255,0)),
+        repeating-linear-gradient(
+          90deg,
+          var(--wood1) 0px,
+          var(--wood1) 12px,
+          var(--wood2) 12px,
+          var(--wood2) 28px,
+          var(--wood3) 28px,
+          var(--wood3) 36px
+        );
+      overflow-x:hidden;
+    }
+
+    #app{
+      max-width:640px;
+      margin:0 auto;
+      min-height:100%;
+      padding:12px 12px 92px;
+      box-sizing:border-box;
+    }
+
+    .card{
+      background:var(--panel);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding:12px;
+      box-sizing:border-box;
+    }
+
+    .row{display:flex;gap:10px;align-items:center;}
+    .space{height:10px;}
+    .hr{height:1px;background:rgba(0,0,0,.08);margin:10px 0;}
+    .muted{color:var(--muted); font-weight:900; font-size:12px; line-height:1.5;}
+    .pill{
+      font-size:12px;
+      color:var(--muted);
+      background:rgba(255,255,255,.70);
+      border:1px solid rgba(0,0,0,.06);
+      padding:5px 9px;
+      border-radius:999px;
+      white-space:nowrap;
+      font-weight:1000;
+    }
+
+    /* 顶部不规则标题 */
+    .hero{
+      position:relative;
+      border-radius:22px;
+      padding:14px 14px 12px;
+      background:rgba(255,255,255,.55);
+      border:1px solid rgba(0,0,0,.08);
+      box-shadow: 0 10px 18px rgba(0,0,0,.06);
+      overflow:hidden;
+    }
+    .hero::before{
+      content:"";
+      position:absolute; inset:-30px;
+      background:
+        radial-gradient(circle at 15% 30%, rgba(255,154,60,.20), transparent 55%),
+        radial-gradient(circle at 75% 40%, rgba(111,182,255,.22), transparent 60%),
+        radial-gradient(circle at 55% 85%, rgba(239,68,68,.14), transparent 55%);
+      filter: blur(2px);
+      transform: rotate(-2deg);
+      pointer-events:none;
+    }
+    .titleWrap{
+      position:relative;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+    }
+    .funTitle{
+      display:flex;
+      gap:4px;
+      align-items:flex-end;
+      user-select:none;
+    }
+    .funTitle span{
+      display:inline-block;
+      font-weight:1000;
+      font-size:28px;
+      letter-spacing:1px;
+      color:#123a5a;
+      text-shadow: 0 2px 0 rgba(255,255,255,.6);
+    }
+    .funTitle span:nth-child(1){transform:rotate(-6deg) translateY(2px);}
+    .funTitle span:nth-child(2){transform:rotate(3deg) translateY(-2px);}
+    .funTitle span:nth-child(3){transform:rotate(-2deg) translateY(1px);}
+    .funTitle span:nth-child(4){transform:rotate(6deg) translateY(-1px);}
+    .subtitle{
+      position:relative;
+      font-size:12px;
+      font-weight:900;
+      color:rgba(32,48,64,.65);
+      padding-bottom:2px;
+      white-space:nowrap;
+    }
+
+    /* 年月选择条 */
+    .monthBar{
+      margin-top:10px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+    .pickBtn, .iconBtn{
+      border:none;
+      border-radius:16px;
+      padding:10px 12px;
+      font-weight:1100;
+      cursor:pointer;
+      background:rgba(255,255,255,.72);
+      border:1px solid rgba(0,0,0,.10);
+      box-shadow: 0 10px 18px rgba(0,0,0,.06);
+      user-select:none;
+    }
+    .pickBtn:active,.iconBtn:active{transform:scale(.99);}
+    .pickBtn{
+      display:flex; align-items:center; gap:8px;
+      justify-content:center;
+      flex:1;
+    }
+    .pickBtn .k{color:var(--muted);font-weight:1000;font-size:12px;}
+    .pickBtn .v{font-weight:1100;font-size:15px;}
+
+    /* 日历 */
+    .cal{
+      margin-top:12px;
+      background:rgba(255,255,255,.55);
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:22px;
+      padding:10px;
+      box-shadow: 0 10px 18px rgba(0,0,0,.06);
+      touch-action: pan-y;
+    }
+    .calGrid{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap:9px;
+    }
+    .dow{
+      font-size:12px;
+      color:var(--muted);
+      text-align:center;
+      font-weight:1000;
+      padding:3px 0 6px;
+    }
+    .day{
+      aspect-ratio: 1 / 1;
+      border-radius:16px;
+      border:1px solid rgba(0,0,0,.08);
+      background:rgba(255,255,255,.70);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:1200;
+      cursor:pointer;
+      user-select:none;
+      position:relative;
+      box-shadow: 0 7px 16px rgba(0,0,0,.06);
+      overflow:hidden;
+      font-size:16px;
+    }
+    .day.muted{opacity:.28;cursor:default;}
+
+    /* 仅黄色描边标记今天 */
+    .day.today{
+      border-color: rgba(251,191,36,.65);
+      box-shadow:
+        0 10px 20px rgba(0,0,0,.10),
+        0 0 0 2px rgba(251,191,36,.40) inset;
+    }
+
+    /* 不要红点/绿点：只做轻微底色 */
+    .day.markRed{
+      border-color: rgba(239,68,68,.22);
+      background: rgba(239,68,68,.08);
+    }
+    .day.markGreen{
+      border-color: rgba(22,163,74,.22);
+      background: rgba(22,163,74,.08);
+    }
+
+    /* 底部导航 */
+    .tabs{
+      position:fixed;
+      left:50%;
+      transform:translateX(-50%);
+      bottom:10px;
+      width:min(640px, calc(100% - 20px));
+      background:rgba(255,255,255,.78);
+      border:1px solid rgba(0,0,0,.10);
+      box-shadow: 0 16px 30px rgba(0,0,0,.14);
+      border-radius:22px;
+      padding:8px;
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:8px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index:50;
+    }
+    .tab{
+      border:none;
+      border-radius:18px;
+      padding:10px 8px;
+      font-weight:1100;
+      cursor:pointer;
+      background:rgba(255,255,255,.60);
+      border:1px solid rgba(0,0,0,.08);
+      color:var(--muted);
+      user-select:none;
+    }
+    .tab.active{
+      background:linear-gradient(180deg, rgba(111,182,255,.95), rgba(111,182,255,.70));
+      border-color: rgba(6,70,140,.22);
+      color:#083a6b;
+    }
+
+    /* 新建页顶部切换 */
+    .seg{display:flex; gap:10px;}
+    .seg button{
+      flex:1;
+      border:none;
+      border-radius:18px;
+      padding:12px 10px;
+      font-weight:1200;
+      cursor:pointer;
+      background:rgba(255,255,255,.70);
+      border:1px solid rgba(0,0,0,.10);
+      box-shadow: 0 10px 18px rgba(0,0,0,.06);
+      color:var(--muted);
+      user-select:none;
+    }
+    .seg button.active{
+      background:linear-gradient(180deg, rgba(255,154,60,.95), rgba(255,154,60,.70));
+      border-color: rgba(255,154,60,.35);
+      color:#5a2a00;
+    }
+
+    /* 表单 */
+    .label{
+      font-size:12px;
+      font-weight:1000;
+      color:var(--muted);
+      margin:2px 0 6px 2px;
+    }
+    .fieldRow{
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap:10px;
+      align-items:center;
+    }
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+
+    .input{
+      width:100%;
+      box-sizing:border-box;
+      border-radius:16px;
+      border:1px solid rgba(0,0,0,.10);
+      padding:12px 12px;
+      font-weight:900;
+      outline:none;
+      background:rgba(255,255,255,.85);
+      box-shadow: 0 10px 18px rgba(0,0,0,.05);
+      color:var(--text);
+    }
+
+    .miniBtn{
+      border:none;
+      border-radius:16px;
+      padding:12px 12px;
+      font-weight:1100;
+      cursor:pointer;
+      background:rgba(255,255,255,.72);
+      border:1px solid rgba(0,0,0,.10);
+      box-shadow: 0 10px 18px rgba(0,0,0,.06);
+      user-select:none;
+      white-space:nowrap;
+    }
+    .miniBtn:active{transform:scale(.99);}
+
+    .btn{
+      border:none;
+      border-radius:18px;
+      padding:12px 12px;
+      font-weight:1200;
+      cursor:pointer;
+      background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.70));
+      border:1px solid rgba(0,0,0,.10);
+      box-shadow: 0 12px 20px rgba(0,0,0,.07);
+      color:var(--text);
+      user-select:none;
+    }
+    .btn.primary{
+      background:linear-gradient(180deg, rgba(111,182,255,.95), rgba(111,182,255,.70));
+      border-color: rgba(6,70,140,.22);
+      color:#083a6b;
+    }
+
+    /* ✅ 新增：输入框内确认按钮 */
+    .inputWrap{
+      position:relative;
+      width:100%;
+    }
+    .inputWrap .input{
+      padding-right:68px; /* 给“确认”留空间 */
+    }
+    .inConfirm{
+      position:absolute;
+      right:8px;
+      top:50%;
+      transform:translateY(-50%);
+      border:none;
+      border-radius:12px;
+      padding:8px 10px;
+      font-weight:1100;
+      cursor:pointer;
+      background:rgba(0,0,0,.06);
+      border:1px solid rgba(0,0,0,.10);
+      user-select:none;
+      line-height:1;
+    }
+    .inConfirm:active{transform:translateY(-50%) scale(.99);}
+
+    /* ✅ 新建页：确认按钮默认隐藏，点击输入框才显示 */
+    .inConfirm.newConfirm{ display:none; }
+    .inConfirm.newConfirm.show{ display:block; }
+
+
+    /* 活动信息展示 */
+    .infoBox{
+      background:rgba(255,255,255,.70);
+      border:1px dashed rgba(0,0,0,.16);
+      border-radius:18px;
+      padding:10px 12px;
+      font-weight:1100;
+      color:#123a5a;
+      line-height:1.5;
+      white-space:pre-wrap;
+    }
+
+    /* 弹层：居中显示 */
+    .mask{
+      position:fixed; inset:0;
+      background:rgba(0,0,0,.35);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:12px;
+      z-index:80;
+      box-sizing:border-box;
+    }
+    .modal{
+      width:min(640px, 100%);
+      background:rgba(255,255,255,.92);
+      border-radius:22px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.24);
+      padding:12px;
+      max-height:82vh;
+      overflow:auto;
+      box-sizing:border-box;
+    }
+    .modalTop{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .modalTitle{font-size:16px;font-weight:1200;}
+    .close{
+      border:none; border-radius:14px;
+      padding:8px 10px; font-weight:1100;
+      background:rgba(0,0,0,.06); cursor:pointer;
+    }
+
+    .list{display:flex; flex-direction:column; gap:10px;}
+    .item{
+      background:rgba(255,255,255,.85);
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:18px;
+      padding:12px;
+      box-shadow: 0 10px 18px rgba(0,0,0,.06);
+      display:flex;
+      gap:10px;
+      justify-content:space-between;
+      align-items:flex-start;
+    }
+    .itemMain{flex:1; min-width:0;}
+    .itemTitle{font-weight:1200;}
+    .itemSub{margin-top:6px; color:var(--muted); font-weight:900; font-size:12px; line-height:1.4;}
+    .itemActions{display:flex; flex-direction:column; gap:8px; align-items:stretch;}
+    .actionSmall{
+      border:none;
+      border-radius:14px;
+      padding:10px 10px;
+      font-weight:1200;
+      cursor:pointer;
+      background:rgba(255,255,255,.80);
+      border:1px solid rgba(0,0,0,.10);
+      white-space:nowrap;
+    }
+    .actionSmall:active{transform:scale(.99);}
+    .actionSmall.danger{
+      background:rgba(239,68,68,.12);
+      border-color: rgba(239,68,68,.25);
+      color:#b42323;
+    }
+
+    /* 名单弹层 item */
+    .nameRow{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      cursor:pointer;
+    }
+    .countBadge{
+      font-size:11px;
+      font-weight:1100;
+      padding:4px 8px;
+      border-radius:999px;
+      background:rgba(111,182,255,.18);
+      border:1px solid rgba(111,182,255,.30);
+      color:#1f5a97;
+      align-self:flex-end;
+    }
+
+    /* 三项状态切换（管理页） */
+    .checks{display:flex; gap:10px; flex-wrap:wrap; margin-top:8px;}
+    .check{
+      display:flex; gap:8px; align-items:center;
+      padding:8px 10px;
+      border-radius:14px;
+      background:rgba(255,255,255,.75);
+      border:1px solid rgba(0,0,0,.10);
+      cursor:pointer;
+      user-select:none;
+      font-weight:1100;
+      font-size:12px;
+    }
+    .dot{
+      width:10px; height:10px; border-radius:999px;
+      background:rgba(0,0,0,.18);
+      box-shadow: 0 6px 12px rgba(0,0,0,.10);
+    }
+    .check.on .dot{ background: rgba(22,163,74,.75); }
+    .check.on{ border-color: rgba(22,163,74,.22); background: rgba(22,163,74,.10); }
+
+    /* 汇总模块 */
+    .moduleHead{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .moduleTitle{font-weight:1200; font-size:16px;}
+    .arrows{display:flex; gap:8px;}
+    .arrowBtn{
+      border:none;
+      border-radius:14px;
+      padding:8px 10px;
+      font-weight:1200;
+      cursor:pointer;
+      background:rgba(255,255,255,.80);
+      border:1px solid rgba(0,0,0,.10);
+      user-select:none;
+    }
+    .arrowBtn:active{transform:scale(.99);}
+    .kpis{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+    .kpi{
+      background:rgba(255,255,255,.70);
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:18px;
+      padding:10px;
+      box-shadow: 0 10px 18px rgba(0,0,0,.06);
+    }
+    .kpi .k{font-size:12px; color:var(--muted); font-weight:1000;}
+    .kpi .v{font-size:18px; font-weight:1100; margin-top:2px;}
+
+
+    /* 任务条（汇总页） */
+    .goalBars{display:flex; flex-direction:column; gap:10px;}
+    .goalRow{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px;
+      background:rgba(255,255,255,.70);
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:18px;
+      padding:10px;
+      box-shadow: 0 10px 18px rgba(0,0,0,.06);
+    }
+    .goalRow .l{font-size:12px; color:var(--muted); font-weight:1000; min-width:44px;}
+    .goalRow .r{font-size:12px; color:var(--muted); font-weight:1000; white-space:nowrap;}
+    .barTrack{
+      flex:1;
+      height:12px;
+      border-radius:999px;
+      background:rgba(0,0,0,.06);
+      border:1px solid rgba(0,0,0,.10);
+      overflow:hidden;
+    }
+    .barFill{
+      height:100%;
+      width:0%;
+      border-radius:999px;
+      background:rgba(111,182,255,.85);
+      transition: width .25s ease;
+    }
+
+    /* toast */
+    .toast{
+      position:fixed; left:50%; bottom:92px; transform:translateX(-50%);
+      background:rgba(0,0,0,.78); color:#fff;
+      padding:10px 12px; border-radius:999px;
+      font-weight:1100; font-size:13px;
+      opacity:0; pointer-events:none;
+      transition:.25s ease;
+      z-index:100;
+      max-width:min(640px, calc(100% - 24px));
+      text-align:center;
+    }
+    .toast.show{opacity:1; transform:translateX(-50%) translateY(-4px);}
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- 名单弹层（客户/演员） -->
+  <div class="mask" id="listMask">
+    <div class="modal">
+      <div class="modalTop">
+        <div class="modalTitle" id="listTitle">列表</div>
+        <button class="close" id="listClose">关闭</button>
+      </div>
+      <div class="list" id="listBody"></div>
+    </div>
+  </div>
+
+  <!-- 年份选择 -->
+  <div class="mask" id="yearMask">
+    <div class="modal">
+      <div class="modalTop">
+        <div class="modalTitle">选择年份</div>
+        <button class="close" id="yearClose">关闭</button>
+      </div>
+      <div class="list" id="yearList"></div>
+    </div>
+  </div>
+
+  <!-- 月份选择 -->
+  <div class="mask" id="monthMask">
+    <div class="modal">
+      <div class="modalTop">
+        <div class="modalTitle">选择月份</div>
+        <button class="close" id="monthClose">关闭</button>
+      </div>
+      <div class="list" id="monthList"></div>
+    </div>
+  </div>
+
+  <!-- 日期选择（新建页） -->
+  <div class="mask" id="dateMask">
+    <div class="modal">
+      <div class="modalTop">
+        <div class="modalTitle" id="datePickTitle">选择日期</div>
+        <button class="close" id="dateClose">关闭</button>
+      </div>
+
+      <div class="row" style="justify-content:space-between;">
+        <button class="iconBtn" id="datePrev">◀</button>
+        <button class="pickBtn" id="dateYMBtn" style="flex:1;">
+          <span class="v" id="dateYMText"></span>
+        </button>
+        <button class="iconBtn" id="dateNext">▶</button>
+      </div>
+
+      <div class="cal" id="dateCal"></div>
+    </div>
+  </div>
+
+  <!-- 某天活动列表（点击日历） -->
+  <div class="mask" id="dayMask">
+    <div class="modal">
+      <div class="modalTop">
+        <div class="modalTitle" id="dayTitle">当天活动</div>
+        <button class="close" id="dayClose">关闭</button>
+      </div>
+      <div class="list" id="dayList"></div>
+    </div>
+  </div>
+
+  <!-- 活动管理（过去活动列表 + 三项勾选） -->
+  <div class="mask" id="manageMask">
+    <div class="modal">
+      <div class="modalTop">
+        <div class="modalTitle">活动管理（仅过去活动）</div>
+        <button class="close" id="manageClose">关闭</button>
+      </div>
+      <div class="list" id="manageList"></div>
+    </div>
+  </div>
+
+  <!-- 任务目标 -->
+  <div class="mask" id="goalMask">
+    <div class="modal">
+      <div class="modalTop">
+        <div class="modalTitle">任务目标</div>
+        <button class="close" id="goalClose">关闭</button>
+      </div>
+
+      <div class="label">月度单量目标</div>
+      <div class="fieldRow">
+        <div class="inputWrap">
+          <input class="input" id="goalMonthInput" type="tel" inputmode="numeric" pattern="[0-9]*" />
+          <button class="inConfirm" id="goalMonthOk">确认</button>
+        </div>
+        <span class="pill"> </span>
+      </div>
+
+      <div class="space"></div>
+
+      <div class="label">年度单量目标</div>
+      <div class="fieldRow">
+        <div class="inputWrap">
+          <input class="input" id="goalYearInput" type="tel" inputmode="numeric" pattern="[0-9]*" />
+          <button class="inConfirm" id="goalYearOk">确认</button>
+        </div>
+        <span class="pill"> </span>
+      </div>
+
+      <div class="space"></div>
+      <button class="btn primary" id="goalSave" style="width:100%;">保存</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="tabs">
+    <button class="tab" id="tab-schedule">日程</button>
+    <button class="tab" id="tab-new">新建</button>
+    <button class="tab" id="tab-summary">汇总</button>
+  </div>
+
+<input type="file" id="importFile" accept="application/json" style="display:none" />
+<script>
+/** =========================
+ * 存储与工具
+ * ========================= */
+const STORE = {
+  EVENTS: "bfdiary_events_v3",
+  GOALS:  "bfdiary_goals_v1",
+  BACKUP: "bfdiary_backup_latest_v1",
+  LAST_BACKUP: "bfdiary_last_backup_ts_v1"
+};
+
+function load(key, fallback){
+  try{
+    const raw = localStorage.getItem(key);
+    if(!raw) return fallback;
+    return JSON.parse(raw);
+  }catch(e){ return fallback; }
+}
+function save(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+
+function uid(){ return `${Date.now()}_${Math.random().toString(16).slice(2)}`; }
+function pad2(n){ return String(n).padStart(2,"0"); }
+function todayISO(){
+  const d = new Date();
+  return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+}
+function parseISO(iso){
+  const [y,m,d] = iso.split("-").map(Number);
+  return new Date(y, m-1, d);
+}
+function fmtCNDate(iso){
+  const [y,m,d] = iso.split("-").map(Number);
+  return `${y}/${m}/${d}`;
+}
+function fmtMoney(n){
+  const x = Number(n);
+  if(!Number.isFinite(x)) return "—";
+  return "¥" + x.toFixed(0);
+}
+function monthKey(iso){ return iso ? iso.slice(0,7) : ""; }
+function yearKey(iso){ return iso ? iso.slice(0,4) : ""; }
+
+function splitNames(text){
+  const s = String(text||"").trim();
+  if(!s) return [];
+  return s
+    .split(/[\s,，、;；|/\\，。！？!?.、：:（）()\[\]【】{}“”"'+\-_=~`<>《》]+/g)
+    .map(x=> x.trim())
+    .filter(Boolean);
+}
+function escapeHtml(s){
+  return String(s||"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;");
+}
+
+function getEvents(){ return load(STORE.EVENTS, []); }
+function setEvents(arr){ save(STORE.EVENTS, arr); }
+
+function getGoals(){
+  return load(STORE.GOALS, { monthTarget:"", yearTarget:"" });
+}
+function setGoals(g){ save(STORE.GOALS, g); }
+
+function toast(msg){
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=> el.classList.remove("show"), 1400);
+}
+
+
+/** =========================
+ * 导出/导入 & 自动备份
+ * ========================= */
+function buildExportPayload(){
+  return {
+    v: 1,
+    exportedAt: Date.now(),
+    events: getEvents(),
+    goals: getGoals()
+  };
+}
+function importDataFromObj(obj){
+  try{
+    if(!obj || typeof obj!=="object") throw new Error("bad");
+    const events = Array.isArray(obj.events) ? obj.events : [];
+    const goals = (obj.goals && typeof obj.goals==="object") ? obj.goals : {monthTarget:"", yearTarget:""};
+    setEvents(events);
+    setGoals({monthTarget: goals.monthTarget||"", yearTarget: goals.yearTarget||""});
+    toast("已导入");
+    render();
+  }catch(e){
+    toast("导入失败");
+  }
+}
+function migrateLegacyAutoBackup(){
+  // 兼容旧版本：曾保存过数组备份时，取最新一条迁移成单条覆盖式备份
+  try{
+    const legacyKey = "bfdiary_backups_v1";
+    const hasNew = !!localStorage.getItem(STORE.BACKUP);
+    const raw = localStorage.getItem(legacyKey);
+    if(!hasNew && raw){
+      const arr = JSON.parse(raw);
+      if(Array.isArray(arr) && arr[0]){
+        save(STORE.BACKUP, arr[0]);
+      }
+    }
+  }catch(e){}
+}
+
+function saveAutoBackupSnapshot(){
+  const snap = buildExportPayload();
+  snap.type = "auto";
+  snap.savedAt = Date.now();
+  // 覆盖式：永远只保留一份最新备份，节省空间
+  save(STORE.BACKUP, snap);
+  localStorage.setItem(STORE.LAST_BACKUP, String(Date.now()));
+}
+
+function doAutoBackupIfDue(){
+  const now = Date.now();
+  const last = Number(localStorage.getItem(STORE.LAST_BACKUP) || 0);
+  const TWO_DAYS = 2*24*60*60*1000;
+  if(!last || (now - last) >= TWO_DAYS){
+    saveAutoBackupSnapshot();
+  }
+}
+
+/** =========================
+ * 状态
+ * ========================= */
+const state = {
+  page: "schedule",
+  viewY: new Date().getFullYear(),
+  viewM: new Date().getMonth(),
+
+  summaryMonthY: new Date().getFullYear(),
+  summaryMonthM: new Date().getMonth(),
+  summaryYearY: new Date().getFullYear(),
+
+  editingId: null,
+  draft: {
+    mode: "leader",
+    clientsText: "",
+    receive: "",
+    dateISO: todayISO(),
+    pay: "",
+    invoiceNote: "",
+    actorsText: "",
+    paidIn: false,
+    paidOut: false,
+    invoiced: false
+  },
+
+  datePicker: { y: new Date().getFullYear(), m: new Date().getMonth(), cb: null },
+};
+
+/** =========================
+ * 合作次数（从 events 重算）
+ * ========================= */
+function computeCounts(){
+  const events = getEvents();
+  const clients = {};
+  const actors = {};
+  for(const e of events){
+    for(const c of (e.clients||[])){
+      clients[c] = (clients[c]||0) + 1;
+    }
+    for(const a of (e.actors||[])){
+      actors[a] = (actors[a]||0) + 1;
+    }
+  }
+  return {clients, actors};
+}
+function sortedNameList(map){
+  return Object.entries(map)
+    .sort((a,b)=> (b[1]-a[1]) || a[0].localeCompare(b[0], "zh-Hans-CN"))
+    .map(([name,times])=> ({name,times}));
+}
+
+/** =========================
+ * 日历标记
+ * ========================= */
+function isEventCompleted(e){
+  const pay = Number(e?.pay || 0);
+  const needPaidOut = pay > 0;
+  const hasInvoiceNote = String(e?.invoiceNote || "").trim().length > 0;
+  // ✅ 已完成 = 所有“需要展示的处理项”都已点亮（绿色）
+  return !!e?.paidIn
+    && (!needPaidOut || !!e?.paidOut)
+    && (!hasInvoiceNote || !!e?.invoiced);
+}
+
+function dateMark(iso){
+  const events = getEvents().filter(e=> e.dateISO===iso);
+  if(!events.length) return null;
+
+  const now = parseISO(todayISO());
+  const dt = parseISO(iso);
+
+  // 未来活动一律标红（待处理）
+  if(dt.getTime() >= now.getTime()){
+    return "red";
+  }
+
+  // 过去：只要当天任意活动未完成 -> 红；全部完成 -> 绿
+  const anyIncomplete = events.some(e => !isEventCompleted(e));
+  return anyIncomplete ? "red" : "green";
+}
+
+/** =========================
+ * 渲染
+ * ========================= */
+function render(){
+  document.getElementById("tab-schedule").classList.toggle("active", state.page==="schedule");
+  document.getElementById("tab-new").classList.toggle("active", state.page==="new");
+  document.getElementById("tab-summary").classList.toggle("active", state.page==="summary");
+
+  const app = document.getElementById("app");
+  if(state.page==="schedule") app.innerHTML = renderSchedule();
+  else if(state.page==="new") app.innerHTML = renderNew();
+  else app.innerHTML = renderSummary();
+
+  if(state.page==="schedule"){
+    bindCalendarSwipe("mainCal", ()=> changeMonth(-1), ()=> changeMonth(1));
+    bindScheduleHandlers();
+  }
+  if(state.page==="new"){
+    bindNewHandlers();
+  }
+  if(state.page==="summary"){
+    bindSummaryHandlers();
+  }
+}
+
+/** ===== 日程页 ===== */
+function renderSchedule(){
+  const y = state.viewY, m = state.viewM;
+  return `
+    <div class="hero">
+      <div class="titleWrap">
+        <div class="funTitle" aria-label="脱贫进行时">
+          <span>脱</span><span>贫</span><span>进</span><span>行</span><span>时</span>
+        </div>
+        <div class="subtitle">滑动切月 · 点击日期查看</div>
+      </div>
+
+      <div class="monthBar">
+        <button class="iconBtn" id="prevMonthBtn">◀</button>
+
+        <button class="pickBtn" id="yearBtn">
+          <span class="k">年份</span><span class="v">${y}</span>
+        </button>
+
+        <button class="pickBtn" id="monthBtn">
+          <span class="k">月份</span><span class="v">${m+1}</span>
+        </button>
+
+        <button class="iconBtn" id="nextMonthBtn">▶</button>
+      </div>
+    </div>
+
+    <div class="cal card" id="mainCal">
+      ${renderCalendarGrid(y,m)}
+      <div class="space"></div>
+      <div class="muted">红：未收/未付（或未来活动） · 绿：过去且已收已付</div>
+    </div>
+
+    <div class="space"></div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div style="font-weight:1200;">活动管理</div>
+        <button class="miniBtn" id="openManageBtn">打开</button>
+      </div>
+    </div>
+  `.trim();
+}
+
+function renderCalendarGrid(y, m){
+  const first = new Date(y, m, 1);
+  const firstDow = first.getDay();
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+
+  const today = new Date();
+  const isThisMonth = today.getFullYear()===y && today.getMonth()===m;
+  const todayD = today.getDate();
+
+  const dows = ["日","一","二","三","四","五","六"].map(w=> `<div class="dow">${w}</div>`).join("");
+  let cells = dows;
+
+  for(let i=0;i<firstDow;i++){
+    cells += `<div class="day muted"></div>`;
+  }
+
+  for(let d=1; d<=daysInMonth; d++){
+    const iso = `${y}-${pad2(m+1)}-${pad2(d)}`;
+    const mark = dateMark(iso);
+    const isToday = isThisMonth && d===todayD;
+
+    let cls = "day";
+    if(isToday) cls += " today";
+    if(mark==="red") cls += " markRed";
+    if(mark==="green") cls += " markGreen";
+
+    cells += `<div class="${cls}" data-iso="${iso}">${d}</div>`;
+  }
+
+  return `<div class="calGrid" id="calGrid">${cells}</div>`;
+}
+
+function changeMonth(delta){
+  let y = state.viewY, m = state.viewM + delta;
+  if(m < 0){ m = 11; y -= 1; }
+  if(m > 11){ m = 0; y += 1; }
+  state.viewY = y; state.viewM = m;
+  render();
+}
+
+function bindCalendarSwipe(calId, onSwipeRight, onSwipeLeft){
+  const el = document.getElementById(calId);
+  if(!el) return;
+  let sx=0, sy=0, st=0;
+  el.addEventListener("touchstart", (e)=>{
+    const t = e.touches[0];
+    sx=t.clientX; sy=t.clientY; st=Date.now();
+  }, {passive:true});
+  el.addEventListener("touchend", (e)=>{
+    const t = e.changedTouches[0];
+    const dx = t.clientX - sx;
+    const dy = t.clientY - sy;
+    const dt = Date.now()-st;
+    if(Math.abs(dx) > 60 && Math.abs(dy) < 40 && dt < 500){
+      if(dx > 0) onSwipeRight(); else onSwipeLeft();
+    }
+  }, {passive:true});
+}
+
+function bindScheduleHandlers(){
+  document.getElementById("prevMonthBtn").onclick = ()=> changeMonth(-1);
+  document.getElementById("nextMonthBtn").onclick = ()=> changeMonth(1);
+  document.getElementById("yearBtn").onclick = openYearPicker;
+  document.getElementById("monthBtn").onclick = openMonthPicker;
+
+  const grid = document.getElementById("calGrid");
+  grid.querySelectorAll(".day").forEach(day=>{
+    const iso = day.getAttribute("data-iso");
+    if(!iso) return;
+    if(day.classList.contains("muted")) return;
+    day.onclick = ()=> openDayEvents(iso);
+  });
+
+  document.getElementById("openManageBtn").onclick = openManage;
+}
+
+/** ===== ✅ 新建页：仅这里的排版改了 ===== */
+function renderNew(){
+  const d = state.draft;
+  const title = state.editingId ? "编辑活动" : "新建活动";
+  const info = buildActivityInfo();
+
+  return `
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div style="font-weight:1200;font-size:18px;">${title}</div>
+        <span class="pill">${fmtCNDate(d.dateISO)}</span>
+      </div>
+
+      <div class="space"></div>
+
+      <div class="seg">
+        <button id="modeLeader" class="${d.mode==="leader"?"active":""}">领队</button>
+        <button id="modeActor" class="${d.mode==="actor"?"active":""}">演员</button>
+      </div>
+
+      <div class="space"></div>
+
+      <div class="label">甲方</div>
+      <div class="fieldRow">
+        <div class="inputWrap">
+          <input class="input" id="clientsInput" value="${escapeHtml(d.clientsText)}"/>
+          <button class="inConfirm newConfirm" id="clientsOk">确认</button>
+        </div>
+        <button class="miniBtn" id="pickClientsBtn">客户列表</button>
+      </div>
+
+      <div class="space"></div>
+
+      <div class="grid2">
+        <div>
+          <div class="label">应收</div>
+          <div class="inputWrap">
+            <input class="input" id="receiveInput" type="tel" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(d.receive)}"/>
+            <button class="inConfirm newConfirm" id="receiveOk">确认</button>
+          </div>
+        </div>
+        <div>
+          <div class="label">应付</div>
+          <div class="inputWrap">
+            <input class="input" id="payInput" type="tel" inputmode="numeric" pattern="[0-9]*" value="${escapeHtml(d.pay)}"/>
+            <button class="inConfirm newConfirm" id="payOk">确认</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="space"></div>
+
+      <div class="label">日期（必选）</div>
+      <button class="miniBtn" id="pickDateBtn" style="width:100%;">${fmtCNDate(d.dateISO)}</button>
+
+      <div class="space"></div>
+
+      <div class="label">发票备注</div>
+      <div class="inputWrap">
+        <input class="input" id="invoiceInput" value="${escapeHtml(d.invoiceNote)}"/>
+        <button class="inConfirm newConfirm" id="invoiceOk">确认</button>
+      </div>
+
+      <div class="space"></div>
+
+      <div class="label">添加演员</div>
+      <div class="fieldRow">
+        <div class="inputWrap">
+          <input class="input" id="actorsInput" value="${escapeHtml(d.actorsText)}"/>
+          <button class="inConfirm newConfirm" id="actorsOk">确认</button>
+        </div>
+        <button class="miniBtn" id="pickActorsBtn">演员列表</button>
+      </div>
+
+      <div class="space"></div>
+
+      <div class="label">活动信息</div>
+      <div class="infoBox" id="infoBox">${escapeHtml(info)}</div>
+
+      <div class="space"></div>
+
+      <div class="row" style="justify-content:space-between;">
+        <div class="muted">状态（可选）</div>
+        <span class="pill">${d.paidIn?"已收":"未收"} · ${d.paidOut?"已付":"未付"} · ${d.invoiced?"已开票":"未开票"}</span>
+      </div>
+
+      <div class="space"></div>
+
+      <div class="row" style="gap:10px;">
+        <button class="btn" id="togglePaidInBtn" style="flex:1;">已收款</button>
+        <button class="btn" id="togglePaidOutBtn" style="flex:1;">已付款</button>
+        <button class="btn" id="toggleInvBtn" style="flex:1;">已开发票</button>
+      </div>
+
+      <div class="space"></div>
+
+      <button class="btn primary" id="saveBtn" style="width:100%;">完成并确认</button>
+
+      ${state.editingId ? `
+        <div class="space"></div>
+        <button class="btn" id="cancelEditBtn" style="width:100%;">返回不保存</button>
+      ` : ``}
+    </div>
+  `.trim();
+}
+
+function bindNewHandlers(){
+  const d = state.draft;
+
+  const clientsInput = document.getElementById("clientsInput");
+  const actorsInput = document.getElementById("actorsInput");
+  const receiveInput = document.getElementById("receiveInput");
+  const payInput = document.getElementById("payInput");
+  const invoiceInput = document.getElementById("invoiceInput");
+  const infoBox = document.getElementById("infoBox");
+
+  function digitsOnly(el){
+    el.addEventListener("input", ()=>{
+      const v = el.value.replace(/[^\d]/g, "");
+      if(el.value !== v) el.value = v;
+      sync();
+    });
+  }
+  function sync(){
+    d.clientsText = clientsInput.value;
+    d.actorsText = actorsInput.value;
+    d.receive = receiveInput.value;
+    d.pay = payInput.value;
+    d.invoiceNote = invoiceInput.value;
+    infoBox.textContent = buildActivityInfo();
+  }
+
+  digitsOnly(receiveInput);
+  digitsOnly(payInput);
+  clientsInput.addEventListener("input", sync);
+  actorsInput.addEventListener("input", sync);
+  invoiceInput.addEventListener("input", sync);
+
+  // 确认按钮：退出键盘（按钮已在输入框内）
+  document.getElementById("clientsOk").onclick = ()=> clientsInput.blur();
+  document.getElementById("actorsOk").onclick = ()=> actorsInput.blur();
+  document.getElementById("receiveOk").onclick = ()=> receiveInput.blur();
+  document.getElementById("payOk").onclick = ()=> payInput.blur();
+  document.getElementById("invoiceOk").onclick = ()=> invoiceInput.blur();
+
+  // ✅ 新建页：确认按钮默认隐藏；点击/聚焦输入框才显示，失焦后隐藏
+  function wireInlineConfirm(inputEl, btnEl){
+    if(!inputEl || !btnEl) return;
+    const show = ()=> btnEl.classList.add("show");
+    const hide = ()=> btnEl.classList.remove("show");
+
+    // 点击输入框/聚焦显示
+    inputEl.addEventListener("focus", show);
+    inputEl.addEventListener("click", show);
+
+    // 失焦稍后隐藏（给按钮点击留时间）
+    inputEl.addEventListener("blur", ()=> setTimeout(hide, 120));
+
+    // 按钮按下时避免立刻失焦导致按钮无法点击
+    btnEl.addEventListener("mousedown", (e)=>{ e.preventDefault(); });
+    btnEl.addEventListener("touchstart", (e)=>{ e.preventDefault(); }, {passive:false});
+  }
+
+  wireInlineConfirm(clientsInput, document.getElementById("clientsOk"));
+  wireInlineConfirm(actorsInput, document.getElementById("actorsOk"));
+  wireInlineConfirm(receiveInput, document.getElementById("receiveOk"));
+  wireInlineConfirm(payInput, document.getElementById("payOk"));
+  wireInlineConfirm(invoiceInput, document.getElementById("invoiceOk"));
+
+  document.getElementById("modeLeader").onclick = ()=>{ d.mode="leader"; render(); };
+  document.getElementById("modeActor").onclick = ()=>{ d.mode="actor"; render(); };
+
+  document.getElementById("pickClientsBtn").onclick = ()=> openNameList("clients", "clientsInput");
+  document.getElementById("pickActorsBtn").onclick = ()=> openNameList("actors", "actorsInput");
+
+  document.getElementById("pickDateBtn").onclick = ()=>{
+    openDatePicker(d.dateISO, (iso)=>{
+      d.dateISO = iso;
+      render();
+    });
+  };
+
+  document.getElementById("togglePaidInBtn").onclick = ()=>{ d.paidIn = !d.paidIn; render(); };
+  document.getElementById("togglePaidOutBtn").onclick = ()=>{ d.paidOut = !d.paidOut; render(); };
+  document.getElementById("toggleInvBtn").onclick = ()=>{ d.invoiced = !d.invoiced; render(); };
+
+  document.getElementById("saveBtn").onclick = saveDraft;
+
+  const cancelBtn = document.getElementById("cancelEditBtn");
+  if(cancelBtn){
+    cancelBtn.onclick = ()=>{
+      state.editingId = null;
+      state.page = "schedule";
+      render();
+    };
+  }
+
+  infoBox.textContent = buildActivityInfo();
+}
+
+function buildActivityInfo(){
+  const d = state.draft;
+  const clients = splitNames(d.clientsText);
+  const actors = splitNames(d.actorsText);
+
+  const parts = [];
+  parts.push(`日期：${fmtCNDate(d.dateISO)}`);
+  parts.push(`身份：${d.mode==="leader" ? "领队" : "演员"}`);
+
+  if(clients.length) parts.push(`甲方：${clients.join("、")}`);
+  if(d.receive) parts.push(`应收：${fmtMoney(Number(d.receive))}`);
+  if(d.pay) parts.push(`应付：${fmtMoney(Number(d.pay))}`);
+
+  if(d.receive || d.pay){
+    const bal = (Number(d.receive||0) - Number(d.pay||0));
+    parts.push(`结余：${fmtMoney(bal)}`);
+  }
+
+  if(actors.length) parts.push(`演员：${actors.join("、")}`);
+  if(d.invoiceNote.trim()) parts.push(`备注：${d.invoiceNote.trim()}`);
+
+  const status = [];
+  if(d.paidIn) status.push("已收款");
+  if(d.paidOut) status.push("已付款");
+  if(d.invoiced) status.push("已开发票");
+  if(status.length) parts.push(`状态：${status.join(" / ")}`);
+
+  return parts.join("\n");
+}
+
+function saveDraft(){
+  const d = state.draft;
+  if(!d.dateISO){ toast("请选择日期"); return; }
+
+  const clients = splitNames(d.clientsText);
+  const actors = splitNames(d.actorsText);
+
+  const receive = d.receive ? Number(d.receive) : 0;
+  const pay = d.pay ? Number(d.pay) : 0;
+
+  const safeReceive = Number.isFinite(receive) ? Math.round(receive) : 0;
+  const safePay = Number.isFinite(pay) ? Math.round(pay) : 0;
+
+  const events = getEvents();
+
+  if(state.editingId){
+    const idx = events.findIndex(e=> e.id===state.editingId);
+    if(idx<0){ toast("记录不存在"); state.editingId=null; state.page="schedule"; render(); return; }
+    events[idx] = {
+      ...events[idx],
+      mode: d.mode,
+      dateISO: d.dateISO,
+      clients,
+      actors,
+      receive: safeReceive,
+      pay: safePay,
+      invoiceNote: d.invoiceNote.trim(),
+      paidIn: !!d.paidIn,
+      paidOut: !!d.paidOut,
+      invoiced: !!d.invoiced,
+      updatedAt: Date.now()
+    };
+    setEvents(events);
+    toast("已更新");
+  }else{
+    const event = {
+      id: uid(),
+      mode: d.mode,
+      dateISO: d.dateISO,
+      clients,
+      actors,
+      receive: safeReceive,
+      pay: safePay,
+      invoiceNote: d.invoiceNote.trim(),
+      paidIn: !!d.paidIn,
+      paidOut: !!d.paidOut,
+      invoiced: !!d.invoiced,
+      createdAt: Date.now()
+    };
+    events.unshift(event);
+    setEvents(events);
+    toast("已记录");
+  }
+
+  const dt = parseISO(d.dateISO);
+  state.viewY = dt.getFullYear();
+  state.viewM = dt.getMonth();
+
+  state.editingId = null;
+  state.draft = {
+    mode: d.mode,
+    clientsText: "",
+    receive: "",
+    dateISO: d.dateISO,
+    pay: "",
+    invoiceNote: "",
+    actorsText: "",
+    paidIn: false,
+    paidOut: false,
+    invoiced: false
+  };
+
+  state.page = "schedule";
+  render();
+}
+
+/** ===== 汇总页（保持不变） ===== */
+
+function renderGoalBar(label, doneCount, targetRaw){
+  const t = Number(String(targetRaw||"").trim());
+  if(!Number.isFinite(t) || t<=0) return `
+    <div class="goalRow">
+      <div class="l">${label}</div>
+      <div class="barTrack"><div class="barFill" style="width:0%;"></div></div>
+      <div class="r">—</div>
+    </div>
+  `;
+  const pct = Math.max(0, Math.min(100, (doneCount / t) * 100));
+  return `
+    <div class="goalRow">
+      <div class="l">${label}</div>
+      <div class="barTrack"><div class="barFill" style="width:${pct.toFixed(2)}%;"></div></div>
+      <div class="r">${doneCount}/${t}</div>
+    </div>
+  `;
+}
+
+function renderSummary(){
+  const events = getEvents();
+  const now = parseISO(todayISO());
+  const past = events.filter(e=> parseISO(e.dateISO).getTime() < now.getTime());
+
+  const goals = getGoals();
+
+  const my = state.summaryMonthY;
+  const mm = state.summaryMonthM;
+  const monthYM = `${my}-${pad2(mm+1)}`;
+  const monthPast = past.filter(e=> monthKey(e.dateISO)===monthYM);
+
+  const yy = state.summaryYearY;
+  const yearPast = past.filter(e=> yearKey(e.dateISO)===String(yy));
+
+  function calcModule(arr){
+    const income = arr.reduce((s,e)=> s + (Number(e.receive)||0), 0);
+    const out = arr.reduce((s,e)=> s + (Number(e.pay)||0), 0);
+    const leaderCount = arr.filter(e=> e.mode==="leader").length;
+    const actorCount  = arr.filter(e=> e.mode==="actor").length;
+    const balance = income - out;
+    return {income,out,leaderCount,actorCount,balance};
+  }
+
+  const mData = calcModule(monthPast);
+  const yData = calcModule(yearPast);
+
+  return `
+    <div class="card">
+      <div class="moduleHead">
+        <div class="moduleTitle">月度总结</div>
+        <div class="arrows">
+          <button class="arrowBtn" id="mPrev">◀</button>
+          <span class="pill" id="mLabel">${my}年${mm+1}月</span>
+          <button class="arrowBtn" id="mNext">▶</button>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="k">收入</div><div class="v">${fmtMoney(mData.income)}</div></div>
+        <div class="kpi"><div class="k">支出</div><div class="v">${fmtMoney(mData.out)}</div></div>
+        <div class="kpi"><div class="k">领队单量</div><div class="v">${mData.leaderCount}</div></div>
+        <div class="kpi"><div class="k">演员单量</div><div class="v">${mData.actorCount}</div></div>
+        <div class="kpi" style="grid-column:1 / span 2;"><div class="k">结余</div><div class="v">${fmtMoney(mData.balance)}</div></div>
+      </div>
+    </div>
+
+    <div class="space"></div>
+
+    <div class="card">
+      <div class="moduleHead">
+        <div class="moduleTitle">年度总结</div>
+        <div class="arrows">
+          <button class="arrowBtn" id="yPrev">◀</button>
+          <span class="pill" id="yLabel">${yy}年</span>
+          <button class="arrowBtn" id="yNext">▶</button>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="k">收入</div><div class="v">${fmtMoney(yData.income)}</div></div>
+        <div class="kpi"><div class="k">支出</div><div class="v">${fmtMoney(yData.out)}</div></div>
+        <div class="kpi"><div class="k">领队单量</div><div class="v">${yData.leaderCount}</div></div>
+        <div class="kpi"><div class="k">演员单量</div><div class="v">${yData.actorCount}</div></div>
+        <div class="kpi" style="grid-column:1 / span 2;"><div class="k">结余</div><div class="v">${fmtMoney(yData.balance)}</div></div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="row" style="justify-content:space-between;">
+        <div style="font-weight:1200;">任务目标</div>
+        <div class="row" style="gap:8px;"><button class="miniBtn" id="importBtn">导入</button><button class="miniBtn" id="openGoalsBtn">设置</button></div>
+      </div>
+
+      <div class="space"></div>
+
+      
+      <div class="goalBars">
+        ${renderGoalBar("月度", monthPast.length, goals.monthTarget)}
+        ${renderGoalBar("年度", yearPast.length, goals.yearTarget)}
+      </div>
+    </div>
+  `.trim();
+}
+
+function bindSummaryHandlers(){
+  document.getElementById("mPrev").onclick = ()=>{
+    state.summaryMonthM -= 1;
+    if(state.summaryMonthM < 0){ state.summaryMonthM = 11; state.summaryMonthY -= 1; }
+    render();
+  };
+  document.getElementById("mNext").onclick = ()=>{
+    state.summaryMonthM += 1;
+    if(state.summaryMonthM > 11){ state.summaryMonthM = 0; state.summaryMonthY += 1; }
+    render();
+  };
+
+  document.getElementById("yPrev").onclick = ()=>{ state.summaryYearY -= 1; render(); };
+  document.getElementById("yNext").onclick = ()=>{ state.summaryYearY += 1; render(); };
+const importBtn = document.getElementById("importBtn");
+  const importFile = document.getElementById("importFile");
+if(importBtn) importBtn.onclick = async ()=>{
+  // 尽量“打开备份文件夹”：支持 File System Access API 的浏览器会直接弹出文件选择器
+  try{
+    if(window.showOpenFilePicker){
+      const [fh] = await window.showOpenFilePicker({
+        multiple:false,
+        types:[{
+          description:"向钱进备份",
+          accept:{ "application/json":[".json"] }
+        }]
+      });
+      const file = await fh.getFile();
+      const txt = await file.text();
+      importDataFromObj(JSON.parse(txt));
+      return;
+    }
+  }catch(e){
+    // 用户取消选择也会进这里，继续走 fallback
+  }
+  if(importFile) importFile.click();
+};
+
+  if(importFile && !importFile._wired){
+    importFile._wired = true;
+    importFile.addEventListener("change", async ()=>{
+      const file = importFile.files && importFile.files[0];
+      importFile.value = "";
+      if(!file) return;
+      try{
+        const text = await file.text();
+        const obj = JSON.parse(text);
+        importDataFromObj(obj);
+      }catch(e){
+        toast("导入失败");
+      }
+    });
+  }
+
+
+  document.getElementById("openGoalsBtn").onclick = openGoals;
+}
+
+/** =========================
+ * 日历点击：当天活动
+ * ========================= */
+function eventsOnDate(iso){
+  return getEvents().filter(e=> e.dateISO===iso).sort((a,b)=> (b.createdAt||0)-(a.createdAt||0));
+}
+function openDayEvents(iso){
+  const list = eventsOnDate(iso);
+  document.getElementById("dayTitle").textContent = `${fmtCNDate(iso)} 的活动`;
+
+  const body = document.getElementById("dayList");
+  if(!list.length){
+    body.innerHTML = `<div class="muted">当天没有活动。</div>`;
+  }else{
+    body.innerHTML = list.map(e=>{
+      const bal = (Number(e.receive)||0) - (Number(e.pay)||0);
+      const clientStr = (e.clients||[]).join("、") || "—";
+      const actorStr = (e.actors||[]).join("、") || "—";
+      const modeStr = e.mode==="leader" ? "领队" : "演员";
+      const showPaidOut = Number(e.pay||0) > 0; // 有应付数字才展示“付款”状态
+      const showInvoice = String(e.invoiceNote||"").trim().length > 0; // 有发票备注才展示“发票”状态
+      const stParts = [e.paidIn ? "已收款" : "未收款"];
+      if(showPaidOut) stParts.push(e.paidOut ? "已付款" : "未付款");
+      if(showInvoice) stParts.push(e.invoiced ? "已开发票" : "未开发票");
+      const st = stParts.join(" / ");
+
+      return `
+        <div class="item">
+          <div class="itemMain">
+            <div class="itemTitle">${modeStr} · 甲方：${escapeHtml(clientStr)}</div>
+            <div class="itemSub">
+              应收：${fmtMoney(e.receive)}${showPaidOut ? ` · 应付：${fmtMoney(e.pay)}` : ``} · 结余：${fmtMoney(bal)}<br/>
+              演员：${escapeHtml(actorStr)}<br/>
+              状态：${st}
+            </div>
+          </div>
+          <div class="itemActions">
+            <button class="actionSmall" data-edit="${e.id}">编辑</button>
+            <button class="actionSmall danger" data-del="${e.id}">取消</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    body.querySelectorAll("[data-edit]").forEach(btn=>{
+      btn.onclick = ()=>{
+        const id = btn.getAttribute("data-edit");
+        startEdit(id);
+        closeDay();
+      };
+    });
+    body.querySelectorAll("[data-del]").forEach(btn=>{
+      btn.onclick = ()=>{
+        const id = btn.getAttribute("data-del");
+        deleteEvent(id);
+      };
+    });
+  }
+
+  document.getElementById("dayMask").style.display = "flex";
+}
+function closeDay(){ document.getElementById("dayMask").style.display = "none"; }
+
+function startEdit(id){
+  const e = getEvents().find(x=> x.id===id);
+  if(!e){ toast("记录不存在"); return; }
+
+  state.editingId = id;
+  state.draft = {
+    mode: e.mode || "leader",
+    clientsText: (e.clients||[]).join(" "),
+    receive: String(e.receive ?? ""),
+    dateISO: e.dateISO || todayISO(),
+    pay: String(e.pay ?? ""),
+    invoiceNote: e.invoiceNote || "",
+    actorsText: (e.actors||[]).join(" "),
+    paidIn: !!e.paidIn,
+    paidOut: !!e.paidOut,
+    invoiced: !!e.invoiced
+  };
+  state.page = "new";
+  render();
+}
+
+function deleteEvent(id){
+  const events = getEvents();
+  const idx = events.findIndex(e=> e.id===id);
+  if(idx<0){ toast("记录不存在"); return; }
+  events.splice(idx,1);
+  setEvents(events);
+  toast("已取消该活动");
+  closeDay();
+  render();
+}
+
+/** =========================
+ * 活动管理
+ * ========================= */
+function openManage(){
+  const now = parseISO(todayISO());
+  const past = getEvents()
+    .filter(e=> parseISO(e.dateISO).getTime() < now.getTime())
+    // ✅ 只展示未完成：过去且未同时满足“已收款 + 已付款”（绿色项目不再显示）
+    .filter(e=> !isEventCompleted(e))
+    .sort((a,b)=> (b.dateISO||"").localeCompare(a.dateISO||"") || (b.createdAt||0)-(a.createdAt||0));
+
+  const box = document.getElementById("manageList");
+
+  if(!past.length){
+    box.innerHTML = `<div class="muted">暂无过去活动。</div>`;
+  }else{
+    box.innerHTML = past.map(e=>{
+      const bal = (Number(e.receive)||0) - (Number(e.pay)||0);
+      const clientStr = (e.clients||[]).join("、") || "—";
+      const actorStr = (e.actors||[]).join("、") || "—";
+      const modeStr = e.mode==="leader" ? "领队" : "演员";
+
+      const c1 = e.paidIn ? "check on" : "check";
+      const showPaidOut = Number(e.pay||0) > 0; // ✅ 有应付数字才显示“已付款”
+      const showInvoice = String(e.invoiceNote||"").trim().length > 0; // ✅ 有发票备注才显示“已开发票”
+      const c2 = e.paidOut ? "check on" : "check";
+      const c3 = e.invoiced ? "check on" : "check";
+
+      return `
+        <div class="item">
+          <div class="itemMain">
+            <div class="itemTitle">${fmtCNDate(e.dateISO)} · ${modeStr} · 甲方：${escapeHtml(clientStr)}</div>
+            <div class="itemSub">
+              应收：${fmtMoney(e.receive)}${showPaidOut ? ` · 应付：${fmtMoney(e.pay)}` : ``} · 结余：${fmtMoney(bal)}<br/>
+              演员：${escapeHtml(actorStr)}
+            </div>
+            <div class="checks">
+              <div class="${c1}" data-t="paidIn" data-id="${e.id}"><span class="dot"></span>已收款</div>
+              ${showPaidOut ? `<div class="${c2}" data-t="paidOut" data-id="${e.id}"><span class="dot"></span>已付款</div>` : ``}
+              ${showInvoice ? `<div class="${c3}" data-t="invoiced" data-id="${e.id}"><span class="dot"></span>已开发票</div>` : ``}
+            </div>
+          </div>
+          <div class="itemActions">
+            <button class="actionSmall" data-edit="${e.id}">编辑</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    box.querySelectorAll("[data-t]").forEach(el=>{
+      el.onclick = ()=>{
+        const id = el.getAttribute("data-id");
+        const t = el.getAttribute("data-t");
+        toggleEventFlag(id, t);
+        openManage();
+      };
+    });
+    box.querySelectorAll("[data-edit]").forEach(btn=>{
+      btn.onclick = ()=>{
+        const id = btn.getAttribute("data-edit");
+        closeManage();
+        startEdit(id);
+      };
+    });
+  }
+
+  document.getElementById("manageMask").style.display = "flex";
+}
+function toggleEventFlag(id, key){
+  const events = getEvents();
+  const e = events.find(x=> x.id===id);
+  if(!e) return;
+  e[key] = !e[key];
+  e.updatedAt = Date.now();
+  setEvents(events);
+  render();
+}
+function closeManage(){ document.getElementById("manageMask").style.display = "none"; }
+
+/** =========================
+ * 名单弹层：选择后自动退出键盘
+ * ========================= */
+function openNameList(type, targetInputId){
+  const counts = computeCounts();
+  const map = (type==="clients") ? counts.clients : counts.actors;
+  const arr = sortedNameList(map);
+
+  document.getElementById("listTitle").textContent = type==="clients" ? "客户列表" : "演员列表";
+  const body = document.getElementById("listBody");
+
+  if(!arr.length){
+    body.innerHTML = `<div class="muted">暂无记录。</div>`;
+  }else{
+    body.innerHTML = arr.map(({name,times})=>{
+      const badge = times>0 ? `<span class="countBadge">${times}</span>` : ``;
+      return `
+        <div class="item nameRow" data-name="${escapeHtml(name)}">
+          <div class="itemTitle">${escapeHtml(name)}</div>
+          ${badge}
+        </div>
+      `;
+    }).join("");
+
+    body.querySelectorAll(".nameRow").forEach(row=>{
+      row.onclick = ()=>{
+        const name = row.getAttribute("data-name") || "";
+        const input = document.getElementById(targetInputId);
+        if(!input) return;
+
+        const existing = splitNames(input.value);
+        if(!existing.includes(name)){
+          input.value = (input.value.trim() ? (input.value.trim() + " ") : "") + name;
+          input.dispatchEvent(new Event("input"));
+        }
+        input.blur();
+        closeList();
+      };
+    });
+  }
+
+  document.getElementById("listMask").style.display = "flex";
+}
+function closeList(){ document.getElementById("listMask").style.display = "none"; }
+
+/** =========================
+ * 年/月选择（主日程页）
+ * ========================= */
+function openYearPicker(){
+  const y = state.viewY;
+  const list = [];
+  for(let i=y-6;i<=y+6;i++) list.push(i);
+
+  const box = document.getElementById("yearList");
+  box.innerHTML = list.map(yy=>{
+    return `
+      <div class="item" data-y="${yy}">
+        <div class="itemTitle">${yy}</div>
+      </div>
+    `;
+  }).join("");
+
+  box.querySelectorAll("[data-y]").forEach(el=>{
+    el.onclick = ()=>{
+      state.viewY = Number(el.getAttribute("data-y"));
+      document.getElementById("yearMask").style.display="none";
+      render();
+    };
+  });
+
+  document.getElementById("yearMask").style.display="flex";
+}
+
+function openMonthPicker(){
+  const box = document.getElementById("monthList");
+  box.innerHTML = Array.from({length:12},(_,i)=>{
+    return `
+      <div class="item" data-m="${i}">
+        <div class="itemTitle">${i+1}月</div>
+      </div>
+    `;
+  }).join("");
+
+  box.querySelectorAll("[data-m]").forEach(el=>{
+    el.onclick = ()=>{
+      state.viewM = Number(el.getAttribute("data-m"));
+      document.getElementById("monthMask").style.display="none";
+      render();
+    };
+  });
+
+  document.getElementById("monthMask").style.display="flex";
+}
+
+/** =========================
+ * 日期选择器（居中弹层）
+ * ========================= */
+function openDatePicker(currentISO, cb){
+  const dt = currentISO ? parseISO(currentISO) : new Date();
+  state.datePicker.y = dt.getFullYear();
+  state.datePicker.m = dt.getMonth();
+  state.datePicker.cb = cb;
+
+  renderDatePicker();
+  document.getElementById("dateMask").style.display = "flex";
+}
+function renderDatePicker(){
+  const y = state.datePicker.y;
+  const m = state.datePicker.m;
+  document.getElementById("dateYMText").textContent = `${y}年${m+1}月`;
+
+  const cal = document.getElementById("dateCal");
+  cal.innerHTML = renderCalendarGrid(y,m);
+
+  const grid = cal.querySelector("#calGrid");
+  grid.querySelectorAll(".day").forEach(day=>{
+    const iso = day.getAttribute("data-iso");
+    if(!iso) return;
+    if(day.classList.contains("muted")) return;
+    day.onclick = ()=>{
+      const cb = state.datePicker.cb;
+      if(typeof cb==="function") cb(iso);
+      closeDatePicker();
+    };
+  });
+}
+function closeDatePicker(){
+  document.getElementById("dateMask").style.display = "none";
+  state.datePicker.cb = null;
+}
+
+/** =========================
+ * 任务目标
+ * ========================= */
+function openGoals(){
+  const g = getGoals();
+  const mi = document.getElementById("goalMonthInput");
+  const yi = document.getElementById("goalYearInput");
+  mi.value = g.monthTarget || "";
+  yi.value = g.yearTarget || "";
+
+  const digitsOnly = (el)=>{
+    el.addEventListener("input", ()=>{
+      const v = el.value.replace(/[^\d]/g, "");
+      if(el.value !== v) el.value = v;
+    }, {once:false});
+  };
+  digitsOnly(mi); digitsOnly(yi);
+
+  document.getElementById("goalMonthOk").onclick = ()=> mi.blur();
+  document.getElementById("goalYearOk").onclick = ()=> yi.blur();
+
+  document.getElementById("goalSave").onclick = ()=>{
+    setGoals({ monthTarget: mi.value, yearTarget: yi.value });
+    toast("已保存目标");
+    closeGoals();
+    render();
+  };
+
+  document.getElementById("goalMask").style.display = "flex";
+}
+function closeGoals(){ document.getElementById("goalMask").style.display = "none"; }
+
+/** =========================
+ * 全局：导航 & 弹层关闭
+ * ========================= */
+document.getElementById("tab-schedule").addEventListener("click", ()=>{
+  state.page="schedule";
+  state.editingId = null;
+  render();
+});
+document.getElementById("tab-new").addEventListener("click", ()=>{
+  state.page="new";
+  state.editingId = null;
+  render();
+});
+document.getElementById("tab-summary").addEventListener("click", ()=>{
+  state.page="summary";
+  state.editingId = null;
+  render();
+});
+
+document.getElementById("listClose").addEventListener("click", closeList);
+document.getElementById("listMask").addEventListener("click", (e)=>{ if(e.target.id==="listMask") closeList(); });
+
+document.getElementById("yearClose").addEventListener("click", ()=> document.getElementById("yearMask").style.display="none");
+document.getElementById("yearMask").addEventListener("click", (e)=>{ if(e.target.id==="yearMask") document.getElementById("yearMask").style.display="none"; });
+
+document.getElementById("monthClose").addEventListener("click", ()=> document.getElementById("monthMask").style.display="none");
+document.getElementById("monthMask").addEventListener("click", (e)=>{ if(e.target.id==="monthMask") document.getElementById("monthMask").style.display="none"; });
+
+document.getElementById("dateClose").addEventListener("click", closeDatePicker);
+document.getElementById("dateMask").addEventListener("click", (e)=>{ if(e.target.id==="dateMask") closeDatePicker(); });
+
+document.getElementById("dayClose").addEventListener("click", closeDay);
+document.getElementById("dayMask").addEventListener("click", (e)=>{ if(e.target.id==="dayMask") closeDay(); });
+
+document.getElementById("manageClose").addEventListener("click", closeManage);
+document.getElementById("manageMask").addEventListener("click", (e)=>{ if(e.target.id==="manageMask") closeManage(); });
+
+document.getElementById("goalClose").addEventListener("click", closeGoals);
+document.getElementById("goalMask").addEventListener("click", (e)=>{ if(e.target.id==="goalMask") closeGoals(); });
+
+document.getElementById("datePrev").addEventListener("click", ()=>{
+  state.datePicker.m -= 1;
+  if(state.datePicker.m < 0){ state.datePicker.m = 11; state.datePicker.y -= 1; }
+  renderDatePicker();
+});
+document.getElementById("dateNext").addEventListener("click", ()=>{
+  state.datePicker.m += 1;
+  if(state.datePicker.m > 11){ state.datePicker.m = 0; state.datePicker.y += 1; }
+  renderDatePicker();
+});
+document.getElementById("dateYMBtn").addEventListener("click", ()=>{
+  const y = state.datePicker.y;
+  const m = state.datePicker.m + 1;
+  const ny = prompt("年份", String(y));
+  if(ny && /^\d{4}$/.test(ny)) state.datePicker.y = Number(ny);
+  const nm = prompt("月份(1-12)", String(m));
+  if(nm && /^\d{1,2}$/.test(nm)){
+    const mm = Math.min(12, Math.max(1, Number(nm)));
+    state.datePicker.m = mm - 1;
+  }
+  renderDatePicker();
+});
+
+migrateLegacyAutoBackup();
+doAutoBackupIfDue();
+render();
+
+
+    // PWA: register service worker
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./sw.js").catch(()=>{});
+      });
+    }
+</script>
+</body>
+</html>
