@@ -5,10 +5,10 @@ const CORE_ASSETS = [
   "./index.html",
   "./manifest.json",
   "./sw.js",
-  "./icon-192.png",
-  "./icon-512.png",
-  "./maskable-512.png",
-  "./apple-touch-icon.png"
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./icons/maskable-512.png",
+  "./icons/apple-touch-icon.png"
 ];
 
 self.addEventListener("install", (event) => {

@@ -11,9 +11,9 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="向钱进" />
   <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
-  <link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png" />
 <style>
     :root{
       --wood1:#f6e6cf;
@@ -1203,12 +1203,18 @@ function bindNewHandlers(){
     inputEl.addEventListener("click", show);
 
     // 失焦稍后隐藏（给按钮点击留时间）
-    inputEl.addEventListener("blur", ()=> setTimeout(hide, 120));
+    inputEl.addEventListener("blur", ()=> setTimeout(hide, 160));
 
-    // 按钮按下时避免立刻失焦导致按钮无法点击
-    btnEl.addEventListener("mousedown", (e)=>{ e.preventDefault(); });
-    btnEl.addEventListener("touchstart", (e)=>{ e.preventDefault(); }, {passive:false});
+    // ✅ 关键修复：
+    // 某些安卓浏览器里 touchstart preventDefault 会导致 click 不触发，
+    // 所以改用 pointerdown 直接执行“确认”动作（退出键盘），不依赖 click。
+    btnEl.addEventListener("pointerdown", (e)=>{
+      e.preventDefault();
+      try{ inputEl.blur(); }catch(_){}
+      setTimeout(hide, 0);
+    });
   }
+
 
   wireInlineConfirm(clientsInput, document.getElementById("clientsOk"));
   wireInlineConfirm(actorsInput, document.getElementById("actorsOk"));
