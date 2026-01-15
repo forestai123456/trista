@@ -4,17 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>向钱进</title>
-  
-  <!-- PWA -->
-  <meta name="theme-color" content="#f6e6cf" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="apple-mobile-web-app-title" content="向钱进" />
-  <link rel="manifest" href="./manifest.json" />
-  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
-  <link rel="icon" type="image/png" sizes="512x512" href="./icons/icon-512.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="./icons/apple-touch-icon.png" />
-<style>
+  <style>
     :root{
       --wood1:#f6e6cf;
       --wood2:#efd9bb;
@@ -343,7 +333,7 @@
       color:#083a6b;
     }
 
-    /* ✅ 新增：输入框内确认按钮 */
+    /* 输入框内确认按钮 */
     .inputWrap{
       position:relative;
       width:100%;
@@ -368,7 +358,7 @@
     }
     .inConfirm:active{transform:translateY(-50%) scale(.99);}
 
-    /* ✅ 新建页：确认按钮默认隐藏，点击输入框才显示 */
+    /* 确认按钮默认隐藏，点击输入框才显示 */
     .inConfirm.newConfirm{ display:none; }
     .inConfirm.newConfirm.show{ display:block; }
 
@@ -571,7 +561,6 @@
 <body>
   <div id="app"></div>
 
-  <!-- 名单弹层（客户/演员） -->
   <div class="mask" id="listMask">
     <div class="modal">
       <div class="modalTop">
@@ -582,7 +571,6 @@
     </div>
   </div>
 
-  <!-- 年份选择 -->
   <div class="mask" id="yearMask">
     <div class="modal">
       <div class="modalTop">
@@ -593,7 +581,6 @@
     </div>
   </div>
 
-  <!-- 月份选择 -->
   <div class="mask" id="monthMask">
     <div class="modal">
       <div class="modalTop">
@@ -604,7 +591,6 @@
     </div>
   </div>
 
-  <!-- 日期选择（新建页） -->
   <div class="mask" id="dateMask">
     <div class="modal">
       <div class="modalTop">
@@ -612,19 +598,29 @@
         <button class="close" id="dateClose">关闭</button>
       </div>
 
-      <div class="row" style="justify-content:space-between;">
+      <div class="row" style="justify-content:space-between; gap:10px;">
         <button class="iconBtn" id="datePrev">◀</button>
-        <button class="pickBtn" id="dateYMBtn" style="flex:1;">
-          <span class="v" id="dateYMText"></span>
+
+        <button class="pickBtn" id="dateYearBtn" style="flex:1; display:flex; justify-content:center; gap:8px;">
+          <span class="k">年份</span>
+          <span class="v" id="dateYearText"></span>
         </button>
+
+        <button class="pickBtn" id="dateMonthBtn" style="flex:1; display:flex; justify-content:center; gap:8px;">
+          <span class="k">月份</span>
+          <span class="v" id="dateMonthText"></span>
+        </button>
+
         <button class="iconBtn" id="dateNext">▶</button>
       </div>
+
+      <div class="list" id="dateYearList" style="display:none; max-height:52vh; overflow:auto; padding-top:8px;"></div>
+      <div class="list" id="dateMonthList" style="display:none; max-height:52vh; overflow:auto; padding-top:8px;"></div>
 
       <div class="cal" id="dateCal"></div>
     </div>
   </div>
 
-  <!-- 某天活动列表（点击日历） -->
   <div class="mask" id="dayMask">
     <div class="modal">
       <div class="modalTop">
@@ -635,7 +631,6 @@
     </div>
   </div>
 
-  <!-- 活动管理（过去活动列表 + 三项勾选） -->
   <div class="mask" id="manageMask">
     <div class="modal">
       <div class="modalTop">
@@ -646,7 +641,6 @@
     </div>
   </div>
 
-  <!-- 任务目标 -->
   <div class="mask" id="goalMask">
     <div class="modal">
       <div class="modalTop">
@@ -1041,13 +1035,15 @@ function bindScheduleHandlers(){
     const iso = day.getAttribute("data-iso");
     if(!iso) return;
     if(day.classList.contains("muted")) return;
-    day.onclick = ()=> openDayEvents(iso);
+    day.onclick = ()=>{
+      openDayEvents(iso);
+    };
   });
 
   document.getElementById("openManageBtn").onclick = openManage;
 }
 
-/** ===== ✅ 新建页：仅这里的排版改了 ===== */
+/** ===== ✅ 新建页：修复确认按钮点击无效 ===== */
 function renderNew(){
   const d = state.draft;
   const title = state.editingId ? "编辑活动" : "新建活动";
@@ -1185,14 +1181,7 @@ function bindNewHandlers(){
   actorsInput.addEventListener("input", sync);
   invoiceInput.addEventListener("input", sync);
 
-  // 确认按钮：退出键盘（按钮已在输入框内）
-  document.getElementById("clientsOk").onclick = ()=> clientsInput.blur();
-  document.getElementById("actorsOk").onclick = ()=> actorsInput.blur();
-  document.getElementById("receiveOk").onclick = ()=> receiveInput.blur();
-  document.getElementById("payOk").onclick = ()=> payInput.blur();
-  document.getElementById("invoiceOk").onclick = ()=> invoiceInput.blur();
-
-  // ✅ 新建页：确认按钮默认隐藏；点击/聚焦输入框才显示，失焦后隐藏
+  // ✅ 修复：确认按钮逻辑
   function wireInlineConfirm(inputEl, btnEl){
     if(!inputEl || !btnEl) return;
     const show = ()=> btnEl.classList.add("show");
@@ -1202,19 +1191,22 @@ function bindNewHandlers(){
     inputEl.addEventListener("focus", show);
     inputEl.addEventListener("click", show);
 
-    // 失焦稍后隐藏（给按钮点击留时间）
-    inputEl.addEventListener("blur", ()=> setTimeout(hide, 160));
+    // 真正失去焦点时（例如点了空白处），延迟隐藏
+    inputEl.addEventListener("blur", ()=> setTimeout(hide, 120));
 
-    // ✅ 关键修复：
-    // 某些安卓浏览器里 touchstart preventDefault 会导致 click 不触发，
-    // 所以改用 pointerdown 直接执行“确认”动作（退出键盘），不依赖 click。
-    btnEl.addEventListener("pointerdown", (e)=>{
+    // 处理“确认”按钮点击
+    const handleConfirm = (e) => {
+      // 阻止默认行为（防止焦点跳动或ghost click）
       e.preventDefault();
-      try{ inputEl.blur(); }catch(_){}
-      setTimeout(hide, 0);
-    });
-  }
+      // 停止冒泡
+      e.stopPropagation();
+      // 手动触发输入框失焦 -> 键盘收起 -> 触发上面的 blur 监听 -> 按钮隐藏
+      inputEl.blur();
+    };
 
+    btnEl.addEventListener("mousedown", handleConfirm);
+    btnEl.addEventListener("touchstart", handleConfirm, {passive:false});
+  }
 
   wireInlineConfirm(clientsInput, document.getElementById("clientsOk"));
   wireInlineConfirm(actorsInput, document.getElementById("actorsOk"));
@@ -1304,7 +1296,7 @@ function saveDraft(){
     events[idx] = {
       ...events[idx],
       mode: d.mode,
-      dateISO: d.dateISO,
+      dateISO: todayISO(),
       clients,
       actors,
       receive: safeReceive,
@@ -1359,7 +1351,7 @@ function saveDraft(){
   render();
 }
 
-/** ===== 汇总页（保持不变） ===== */
+/** ===== 汇总页 ===== */
 
 function renderGoalBar(label, doneCount, targetRaw){
   const t = Number(String(targetRaw||"").trim());
@@ -1407,6 +1399,7 @@ function renderSummary(){
   const mData = calcModule(monthPast);
   const yData = calcModule(yearPast);
 
+  // ✅ 新增：在导入按钮旁边加了“备份数据”按钮
   return `
     <div class="card">
       <div class="moduleHead">
@@ -1425,41 +1418,44 @@ function renderSummary(){
         <div class="kpi"><div class="k">演员单量</div><div class="v">${mData.actorCount}</div></div>
         <div class="kpi" style="grid-column:1 / span 2;"><div class="k">结余</div><div class="v">${fmtMoney(mData.balance)}</div></div>
       </div>
-    </div>
-
-    <div class="space"></div>
-
-    <div class="card">
-      <div class="moduleHead">
-        <div class="moduleTitle">年度总结</div>
-        <div class="arrows">
-          <button class="arrowBtn" id="yPrev">◀</button>
-          <span class="pill" id="yLabel">${yy}年</span>
-          <button class="arrowBtn" id="yNext">▶</button>
-        </div>
-      </div>
-
-      <div class="kpis">
-        <div class="kpi"><div class="k">收入</div><div class="v">${fmtMoney(yData.income)}</div></div>
-        <div class="kpi"><div class="k">支出</div><div class="v">${fmtMoney(yData.out)}</div></div>
-        <div class="kpi"><div class="k">领队单量</div><div class="v">${yData.leaderCount}</div></div>
-        <div class="kpi"><div class="k">演员单量</div><div class="v">${yData.actorCount}</div></div>
-        <div class="kpi" style="grid-column:1 / span 2;"><div class="k">结余</div><div class="v">${fmtMoney(yData.balance)}</div></div>
-      </div>
-
-      <div class="hr"></div>
-
-      <div class="row" style="justify-content:space-between;">
-        <div style="font-weight:1200;">任务目标</div>
-        <div class="row" style="gap:8px;"><button class="miniBtn" id="importBtn">导入</button><button class="miniBtn" id="openGoalsBtn">设置</button></div>
-      </div>
 
       <div class="space"></div>
 
-      
-      <div class="goalBars">
-        ${renderGoalBar("月度", monthPast.length, goals.monthTarget)}
-        ${renderGoalBar("年度", yearPast.length, goals.yearTarget)}
+      <div class="card">
+        <div class="moduleHead">
+          <div class="moduleTitle">年度总结</div>
+          <div class="arrows">
+            <button class="arrowBtn" id="yPrev">◀</button>
+            <span class="pill" id="yLabel">${yy}年</span>
+            <button class="arrowBtn" id="yNext">▶</button>
+          </div>
+        </div>
+
+        <div class="kpis">
+          <div class="kpi"><div class="k">收入</div><div class="v">${fmtMoney(yData.income)}</div></div>
+          <div class="kpi"><div class="k">支出</div><div class="v">${fmtMoney(yData.out)}</div></div>
+          <div class="kpi"><div class="k">领队单量</div><div class="v">${yData.leaderCount}</div></div>
+          <div class="kpi"><div class="k">演员单量</div><div class="v">${yData.actorCount}</div></div>
+          <div class="kpi" style="grid-column:1 / span 2;"><div class="k">结余</div><div class="v">${fmtMoney(yData.balance)}</div></div>
+        </div>
+
+        <div class="hr"></div>
+
+        <div class="row" style="justify-content:space-between;">
+          <div style="font-weight:1200;">任务目标</div>
+          <div class="row" style="gap:8px;">
+             <button class="miniBtn" id="exportBtn" style="color:#083a6b;">备份数据</button>
+             <button class="miniBtn" id="importBtn">导入</button>
+             <button class="miniBtn" id="openGoalsBtn">设置</button>
+          </div>
+        </div>
+
+        <div class="space"></div>
+
+        <div class="goalBars">
+          ${renderGoalBar("月度", monthPast.length, goals.monthTarget)}
+          ${renderGoalBar("年度", yearPast.length, goals.yearTarget)}
+        </div>
       </div>
     </div>
   `.trim();
@@ -1479,29 +1475,41 @@ function bindSummaryHandlers(){
 
   document.getElementById("yPrev").onclick = ()=>{ state.summaryYearY -= 1; render(); };
   document.getElementById("yNext").onclick = ()=>{ state.summaryYearY += 1; render(); };
-const importBtn = document.getElementById("importBtn");
+
+  // ✅ 备份按钮逻辑
+  document.getElementById("exportBtn").onclick = ()=>{
+    const data = JSON.stringify(buildExportPayload());
+    const blob = new Blob([data], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "向钱进备份_" + todayISO() + ".json";
+    a.click();
+    toast("备份文件已生成");
+  };
+
+  const importBtn = document.getElementById("importBtn");
   const importFile = document.getElementById("importFile");
-if(importBtn) importBtn.onclick = async ()=>{
-  // 尽量“打开备份文件夹”：支持 File System Access API 的浏览器会直接弹出文件选择器
-  try{
-    if(window.showOpenFilePicker){
-      const [fh] = await window.showOpenFilePicker({
-        multiple:false,
-        types:[{
-          description:"向钱进备份",
-          accept:{ "application/json":[".json"] }
-        }]
-      });
-      const file = await fh.getFile();
-      const txt = await file.text();
-      importDataFromObj(JSON.parse(txt));
-      return;
+  if(importBtn) importBtn.onclick = async ()=>{
+    // 尽量“打开备份文件夹”
+    try{
+      if(window.showOpenFilePicker){
+        const [fh] = await window.showOpenFilePicker({
+          multiple:false,
+          types:[{
+            description:"向钱进备份",
+            accept:{ "application/json":[".json"] }
+          }]
+        });
+        const file = await fh.getFile();
+        const txt = await file.text();
+        importDataFromObj(JSON.parse(txt));
+        return;
+      }
+    }catch(e){
     }
-  }catch(e){
-    // 用户取消选择也会进这里，继续走 fallback
-  }
-  if(importFile) importFile.click();
-};
+    if(importFile) importFile.click();
+  };
 
   if(importFile && !importFile._wired){
     importFile._wired = true;
@@ -1754,7 +1762,7 @@ function openYearPicker(){
   box.innerHTML = list.map(yy=>{
     return `
       <div class="item" data-y="${yy}">
-        <div class="itemTitle">${yy}</div>
+        <div class="itemTitle">${yy}年</div>
       </div>
     `;
   }).join("");
@@ -1799,6 +1807,8 @@ function openDatePicker(currentISO, cb){
   state.datePicker.y = dt.getFullYear();
   state.datePicker.m = dt.getMonth();
   state.datePicker.cb = cb;
+  state.datePicker.panel = "cal";
+  state.datePicker._swipeBound = false;
 
   renderDatePicker();
   document.getElementById("dateMask").style.display = "flex";
@@ -1806,26 +1816,102 @@ function openDatePicker(currentISO, cb){
 function renderDatePicker(){
   const y = state.datePicker.y;
   const m = state.datePicker.m;
-  document.getElementById("dateYMText").textContent = `${y}年${m+1}月`;
+  const panel = state.datePicker.panel || "cal";
+
+  // header texts
+  const yText = document.getElementById("dateYearText");
+  const mText = document.getElementById("dateMonthText");
+  if(yText) yText.textContent = y;
+  if(mText) mText.textContent = (m+1);
 
   const cal = document.getElementById("dateCal");
-  cal.innerHTML = renderCalendarGrid(y,m);
+  const yl = document.getElementById("dateYearList");
+  const ml = document.getElementById("dateMonthList");
 
-  const grid = cal.querySelector("#calGrid");
-  grid.querySelectorAll(".day").forEach(day=>{
-    const iso = day.getAttribute("data-iso");
-    if(!iso) return;
-    if(day.classList.contains("muted")) return;
-    day.onclick = ()=>{
-      const cb = state.datePicker.cb;
-      if(typeof cb==="function") cb(iso);
-      closeDatePicker();
-    };
-  });
+  // show/hide panels
+  if(cal) cal.style.display = (panel==="cal") ? "block" : "none";
+  if(yl) yl.style.display = (panel==="year") ? "block" : "none";
+  if(ml) ml.style.display = (panel==="month") ? "block" : "none";
+
+  // calendar view
+  if(panel === "cal"){
+    if(cal){
+      cal.innerHTML = renderCalendarGrid(y,m);
+
+      const grid = cal.querySelector("#calGrid");
+      if(grid){
+        grid.querySelectorAll(".day").forEach(day=>{
+          const iso = day.getAttribute("data-iso");
+          if(!iso) return;
+          if(day.classList.contains("muted")) return;
+          day.onclick = ()=>{
+            const cb = state.datePicker.cb;
+            if(typeof cb==="function") cb(iso);
+            closeDatePicker();
+          };
+        });
+      }
+    }
+    // bind swipe once
+    if(!state.datePicker._swipeBound){
+      state.datePicker._swipeBound = true;
+      bindCalendarSwipe("dateCal", ()=>{ changeDateMonth(-1); }, ()=>{ changeDateMonth(1); });
+    }
+    return;
+  }
+
+  // year list
+  if(panel === "year" && yl){
+    const base = y;
+    const years = [];
+    for(let i=base-6;i<=base+6;i++) years.push(i);
+    yl.innerHTML = years.map(yy=>`
+      <div class="item" data-y="${yy}">
+        <div class="itemTitle">${yy}年</div>
+      </div>
+    `).join("");
+    yl.querySelectorAll("[data-y]").forEach(el=>{
+      el.onclick = ()=>{
+        state.datePicker.y = Number(el.getAttribute("data-y"));
+        state.datePicker.panel = "cal";
+        renderDatePicker();
+      };
+    });
+    return;
+  }
+
+  // month list
+  if(panel === "month" && ml){
+    const months = Array.from({length:12}, (_,i)=>i);
+    ml.innerHTML = months.map(mm=>`
+      <div class="item" data-m="${mm}">
+        <div class="itemTitle">${mm+1}月</div>
+      </div>
+    `).join("");
+    ml.querySelectorAll("[data-m]").forEach(el=>{
+      el.onclick = ()=>{
+        state.datePicker.m = Number(el.getAttribute("data-m"));
+        state.datePicker.panel = "cal";
+        renderDatePicker();
+      };
+    });
+  }
+}
+
+function changeDateMonth(delta){
+  let y = state.datePicker.y;
+  let m = state.datePicker.m + delta;
+  if(m < 0){ m = 11; y--; }
+  if(m > 11){ m = 0; y++; }
+  state.datePicker.y = y;
+  state.datePicker.m = m;
+  state.datePicker.panel = "cal";
+  renderDatePicker();
 }
 function closeDatePicker(){
   document.getElementById("dateMask").style.display = "none";
   state.datePicker.cb = null;
+  state.datePicker.panel = "cal";
 }
 
 /** =========================
@@ -1910,30 +1996,20 @@ document.getElementById("dateNext").addEventListener("click", ()=>{
   if(state.datePicker.m > 11){ state.datePicker.m = 0; state.datePicker.y += 1; }
   renderDatePicker();
 });
-document.getElementById("dateYMBtn").addEventListener("click", ()=>{
-  const y = state.datePicker.y;
-  const m = state.datePicker.m + 1;
-  const ny = prompt("年份", String(y));
-  if(ny && /^\d{4}$/.test(ny)) state.datePicker.y = Number(ny);
-  const nm = prompt("月份(1-12)", String(m));
-  if(nm && /^\d{1,2}$/.test(nm)){
-    const mm = Math.min(12, Math.max(1, Number(nm)));
-    state.datePicker.m = mm - 1;
-  }
+
+// ✅ 新增：为日期弹窗里的“年份”和“月份”按钮添加点击事件
+document.getElementById("dateYearBtn").addEventListener("click", ()=>{
+  state.datePicker.panel = "year";
+  renderDatePicker();
+});
+document.getElementById("dateMonthBtn").addEventListener("click", ()=>{
+  state.datePicker.panel = "month";
   renderDatePicker();
 });
 
 migrateLegacyAutoBackup();
 doAutoBackupIfDue();
 render();
-
-
-    // PWA: register service worker
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./sw.js").catch(()=>{});
-      });
-    }
 </script>
 </body>
 </html>
