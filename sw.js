@@ -1,5 +1,5 @@
 /* 向钱进 PWA Service Worker */
-const CACHE_NAME = "xiangqianjin-v6";
+const CACHE_NAME = "xiangqianjin-v7";
 const CORE_ASSETS = [
   "./",
   "./index.html",
