@@ -22,6 +22,11 @@
       --red:#ef4444;
       --green:#16a34a;
       --yellow:#fbbf24;
+      --purple:#a855f7;
+
+      /* 任务目标进度条：跟日历标记同一套“柔和半透明”颜色 */
+      --goalRed: rgba(239,68,68,.35);
+      --goalPurple: rgba(168,85,247,.32);
 
       --radius:18px;
     }
@@ -73,6 +78,17 @@
       border-radius:999px;
       white-space:nowrap;
       font-weight:1000;
+    }
+
+    .tagPurple{
+      font-size:12px;
+      font-weight:1100;
+      padding:5px 9px;
+      border-radius:999px;
+      white-space:nowrap;
+      background:rgba(168, 85, 247, .14);
+      border:1px solid rgba(168, 85, 247, .28);
+      color:#6b21a8;
     }
 
     /* 顶部不规则标题 */
@@ -214,6 +230,11 @@
     .day.markGreen{
       border-color: rgba(22,163,74,.22);
       background: rgba(22,163,74,.08);
+    }
+    /* 多活动日：紫色标记（仅日历格子） */
+    .day.markPurple{
+      border-color: rgba(168, 85, 247, .26);
+      background: rgba(168, 85, 247, .10);
     }
 
     /* 底部导航 */
@@ -641,6 +662,16 @@
     </div>
   </div>
 
+  <div class="mask" id="futureMask">
+    <div class="modal">
+      <div class="modalTop">
+        <div class="modalTitle">未来行程</div>
+        <button class="close" id="futureClose">关闭</button>
+      </div>
+      <div class="list" id="futureList"></div>
+    </div>
+  </div>
+
   <div class="mask" id="goalMask">
     <div class="modal">
       <div class="modalTop">
@@ -832,6 +863,7 @@ const state = {
     clientsText: "",
     receive: "",
     dateISO: todayISO(),
+    timeSlot: "",
     pay: "",
     invoiceNote: "",
     actorsText: "",
@@ -882,6 +914,9 @@ function isEventCompleted(e){
 function dateMark(iso){
   const events = getEvents().filter(e=> e.dateISO===iso);
   if(!events.length) return null;
+
+  // 2705 540c65e5591a4e2a6d3b52a8Ff1a65e5538675287d2b827268078bb0
+  if(events.length >= 2) return "purple";
 
   const now = parseISO(todayISO());
   const dt = parseISO(iso);
@@ -951,7 +986,6 @@ function renderSchedule(){
     <div class="cal card" id="mainCal">
       ${renderCalendarGrid(y,m)}
       <div class="space"></div>
-      <div class="muted">红：未收/未付（或未来活动） · 绿：过去且已收已付</div>
     </div>
 
     <div class="space"></div>
@@ -960,6 +994,15 @@ function renderSchedule(){
       <div class="row" style="justify-content:space-between;">
         <div style="font-weight:1200;">活动管理</div>
         <button class="miniBtn" id="openManageBtn">打开</button>
+      </div>
+    </div>
+
+    <div class="space"></div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between;">
+        <div style="font-weight:1200;">未来行程</div>
+        <button class="miniBtn" id="openFutureBtn">打开</button>
       </div>
     </div>
   `.trim();
@@ -988,6 +1031,7 @@ function renderCalendarGrid(y, m){
 
     let cls = "day";
     if(isToday) cls += " today";
+    if(mark==="purple") cls += " markPurple";
     if(mark==="red") cls += " markRed";
     if(mark==="green") cls += " markGreen";
 
@@ -1041,6 +1085,8 @@ function bindScheduleHandlers(){
   });
 
   document.getElementById("openManageBtn").onclick = openManage;
+  const fb = document.getElementById("openFutureBtn");
+  if(fb) fb.onclick = openFuture;
 }
 
 /** ===== ✅ 新建页：修复确认按钮点击无效 ===== */
@@ -1095,8 +1141,16 @@ function renderNew(){
 
       <div class="space"></div>
 
-      <div class="label">日期（必选）</div>
-      <button class="miniBtn" id="pickDateBtn" style="width:100%;">${fmtCNDate(d.dateISO)}</button>
+      <div class="grid2">
+        <div>
+          <div class="label">日期（必选）</div>
+          <button class="miniBtn" id="pickDateBtn" style="width:100%;">${fmtCNDate(d.dateISO)}</button>
+        </div>
+        <div>
+          <div class="label">时间</div>
+          <button class="miniBtn" id="pickTimeBtn" style="width:100%;">${escapeHtml(d.timeSlot ? d.timeSlot : "可选")}</button>
+        </div>
+      </div>
 
       <div class="space"></div>
 
@@ -1227,6 +1281,16 @@ function bindNewHandlers(){
     });
   };
 
+  const timeBtn = document.getElementById("pickTimeBtn");
+  if(timeBtn){
+    timeBtn.onclick = ()=>{
+      openTimePicker(d.timeSlot || "", (val)=>{
+        d.timeSlot = val || "";
+        render();
+      });
+    };
+  }
+
   document.getElementById("togglePaidInBtn").onclick = ()=>{ d.paidIn = !d.paidIn; render(); };
   document.getElementById("togglePaidOutBtn").onclick = ()=>{ d.paidOut = !d.paidOut; render(); };
   document.getElementById("toggleInvBtn").onclick = ()=>{ d.invoiced = !d.invoiced; render(); };
@@ -1252,6 +1316,7 @@ function buildActivityInfo(){
 
   const parts = [];
   parts.push(`日期：${fmtCNDate(d.dateISO)}`);
+  parts.push(`时间：${d.timeSlot ? d.timeSlot : "未选择"}`);
   parts.push(`身份：${d.mode==="leader" ? "领队" : "演员"}`);
 
   if(clients.length) parts.push(`甲方：${clients.join("、")}`);
@@ -1296,7 +1361,8 @@ function saveDraft(){
     events[idx] = {
       ...events[idx],
       mode: d.mode,
-      dateISO: todayISO(),
+      dateISO: d.dateISO,
+      timeSlot: d.timeSlot || "",
       clients,
       actors,
       receive: safeReceive,
@@ -1314,6 +1380,7 @@ function saveDraft(){
       id: uid(),
       mode: d.mode,
       dateISO: d.dateISO,
+      timeSlot: d.timeSlot || "",
       clients,
       actors,
       receive: safeReceive,
@@ -1339,6 +1406,7 @@ function saveDraft(){
     clientsText: "",
     receive: "",
     dateISO: d.dateISO,
+    timeSlot: "",
     pay: "",
     invoiceNote: "",
     actorsText: "",
@@ -1363,10 +1431,16 @@ function renderGoalBar(label, doneCount, targetRaw){
     </div>
   `;
   const pct = Math.max(0, Math.min(100, (doneCount / t) * 100));
+
+  // 仅改变进度条颜色：达成=红，超出=紫；右侧数字不变色
+  let fillColor = 'rgba(111,182,255,.85)';
+  if(doneCount === t) fillColor = 'var(--goalRed)';
+  if(doneCount > t) fillColor = 'var(--goalPurple)';
+
   return `
     <div class="goalRow">
       <div class="l">${label}</div>
-      <div class="barTrack"><div class="barFill" style="width:${pct.toFixed(2)}%;"></div></div>
+      <div class="barTrack"><div class="barFill" style="width:${pct.toFixed(2)}%; background:${fillColor};"></div></div>
       <div class="r">${doneCount}/${t}</div>
     </div>
   `;
@@ -1550,6 +1624,8 @@ function openDayEvents(iso){
       const clientStr = (e.clients||[]).join("、") || "—";
       const actorStr = (e.actors||[]).join("、") || "—";
       const modeStr = e.mode==="leader" ? "领队" : "演员";
+      const timeSlot = e.timeSlot || "";
+      const timeTag = `<span class="pill">${escapeHtml(timeSlot ? timeSlot : "未选")}</span>`;
       const showPaidOut = Number(e.pay||0) > 0; // 有应付数字才展示“付款”状态
       const showInvoice = String(e.invoiceNote||"").trim().length > 0; // 有发票备注才展示“发票”状态
       const stParts = [e.paidIn ? "已收款" : "未收款"];
@@ -1560,7 +1636,10 @@ function openDayEvents(iso){
       return `
         <div class="item">
           <div class="itemMain">
-            <div class="itemTitle">${modeStr} · 甲方：${escapeHtml(clientStr)}</div>
+            <div class="itemTitle" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              ${timeTag}
+              <span>${modeStr} · 甲方：${escapeHtml(clientStr)}</span>
+            </div>
             <div class="itemSub">
               应收：${fmtMoney(e.receive)}${showPaidOut ? ` · 应付：${fmtMoney(e.pay)}` : ``} · 结余：${fmtMoney(bal)}<br/>
               演员：${escapeHtml(actorStr)}<br/>
@@ -1604,6 +1683,7 @@ function startEdit(id){
     clientsText: (e.clients||[]).join(" "),
     receive: String(e.receive ?? ""),
     dateISO: e.dateISO || todayISO(),
+    timeSlot: e.timeSlot || "",
     pay: String(e.pay ?? ""),
     invoiceNote: e.invoiceNote || "",
     actorsText: (e.actors||[]).join(" "),
@@ -1704,6 +1784,102 @@ function toggleEventFlag(id, key){
   render();
 }
 function closeManage(){ document.getElementById("manageMask").style.display = "none"; }
+
+/** =========================
+ * 未来行程（仅未来活动，不展示收付款）
+ * ========================= */
+function openFuture(){
+  const now = parseISO(todayISO());
+  const order = {"上午":1, "下午":2, "晚上":3, "全天":4};
+
+  const future = getEvents()
+    .filter(e=> parseISO(e.dateISO).getTime() >= now.getTime())
+    .sort((a,b)=>{
+      const d = (a.dateISO||"").localeCompare(b.dateISO||"");
+      if(d!==0) return d;
+      const oa = order[a.timeSlot] || 9;
+      const ob = order[b.timeSlot] || 9;
+      if(oa!==ob) return oa-ob;
+      return (b.createdAt||0) - (a.createdAt||0);
+    });
+
+  const box = document.getElementById("futureList");
+  if(!future.length){
+    box.innerHTML = `<div class="muted">暂无未来活动。</div>`;
+  }else{
+    const dateCounts = {};
+    for(const e of future){
+      const k = e.dateISO || "";
+      if(!k) continue;
+      dateCounts[k] = (dateCounts[k] || 0) + 1;
+    }
+
+    box.innerHTML = future.map(e=>{
+      const timeSlot = e.timeSlot || "";
+      const timeLabel = timeSlot ? timeSlot : "未选";
+      const isMulti = (dateCounts[e.dateISO] || 0) >= 2;
+      const timeTagCls = isMulti ? "tagPurple" : "pill";
+
+      const clientStr = (e.clients||[]).join("、");
+      const actorStr = (e.actors||[]).join("、");
+      // 按“甲方优先，否则演员”
+      const whoLabel = clientStr ? `甲方：${escapeHtml(clientStr)}` : (actorStr ? `演员：${escapeHtml(actorStr)}` : "—");
+      return `
+        <div class="item">
+          <div class="itemMain">
+            <div class="itemTitle" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+              <span class="${timeTagCls}">${escapeHtml(timeLabel)}</span>
+              <span>${fmtCNDate(e.dateISO)}</span>
+            </div>
+            <div class="itemSub">${whoLabel}</div>
+          </div>
+          <div class="itemActions">
+            <button class="actionSmall" data-edit="${e.id}">编辑</button>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    box.querySelectorAll("[data-edit]").forEach(btn=>{
+      btn.onclick = ()=>{
+        const id = btn.getAttribute("data-edit");
+        closeFuture();
+        startEdit(id);
+      };
+    });
+  }
+
+  document.getElementById("futureMask").style.display = "flex";
+}
+function closeFuture(){ document.getElementById("futureMask").style.display = "none"; }
+
+/** =========================
+ * 时间选择器（复用通用 list 弹层）
+ * ========================= */
+function openTimePicker(current, cb){
+  const opts = ["上午","下午","晚上","全天"];
+  document.getElementById("listTitle").textContent = "选择时间";
+  const body = document.getElementById("listBody");
+  body.innerHTML = opts.map(v=>{
+    const active = (v === (current||"")) ? ` <span class="pill">已选</span>` : ``;
+    return `
+      <div class="item nameRow" data-val="${escapeHtml(v)}">
+        <div class="itemTitle">${escapeHtml(v)}</div>
+        ${active}
+      </div>
+    `;
+  }).join("");
+
+  body.querySelectorAll("[data-val]").forEach(row=>{
+    row.onclick = ()=>{
+      const v = row.getAttribute("data-val") || "";
+      if(typeof cb === "function") cb(v);
+      closeList();
+    };
+  });
+
+  document.getElementById("listMask").style.display = "flex";
+}
 
 /** =========================
  * 名单弹层：选择后自动退出键盘
@@ -1982,6 +2158,9 @@ document.getElementById("dayMask").addEventListener("click", (e)=>{ if(e.target.
 
 document.getElementById("manageClose").addEventListener("click", closeManage);
 document.getElementById("manageMask").addEventListener("click", (e)=>{ if(e.target.id==="manageMask") closeManage(); });
+
+document.getElementById("futureClose").addEventListener("click", closeFuture);
+document.getElementById("futureMask").addEventListener("click", (e)=>{ if(e.target.id==="futureMask") closeFuture(); });
 
 document.getElementById("goalClose").addEventListener("click", closeGoals);
 document.getElementById("goalMask").addEventListener("click", (e)=>{ if(e.target.id==="goalMask") closeGoals(); });
