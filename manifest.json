@@ -1,6 +1,6 @@
 {
-  "name": "向钱进",
-  "short_name": "向钱进",
+  "name": "营业日记",
+  "short_name": "营业日记",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
