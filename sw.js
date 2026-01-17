@@ -1,6 +1,7 @@
 /* 营业日记 PWA Service Worker (GitHub Pages /trista/) */
 
-const CACHE_VERSION = "v9";
+const CACHE_VERSION = "v10
+  ";
 const CACHE_NAME = `yingye-riji-${CACHE_VERSION}`;
 
 // 站点部署在 GitHub Pages 的子目录
